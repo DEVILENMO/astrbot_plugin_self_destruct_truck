@@ -1,0 +1,44 @@
+{
+  "min_damage": {
+    "description": "发起者伤害下限（秒）",
+    "type": "int",
+    "hint": "正确对轰时发起者随机禁言的最小值；最大值自动为 总和-1",
+    "default": 10
+  },
+  "total_pool": {
+    "description": "双方禁言秒数总和",
+    "type": "int",
+    "hint": "被@者禁言 = 该值 - 发起者随机秒数，默认 60",
+    "default": 60
+  },
+  "misfire_min": {
+    "description": "原地自爆回退下限（秒）",
+    "type": "int",
+    "hint": "原地自爆时发起者禁言 = 波及者禁言总和；无人波及时才用此随机下限，默认 15",
+    "default": 15
+  },
+  "misfire_max": {
+    "description": "原地自爆回退上限（秒）",
+    "type": "int",
+    "hint": "原地自爆时发起者禁言 = 波及者禁言总和；无人波及时才用此随机上限，默认 45",
+    "default": 45
+  },
+  "splash_range": {
+    "description": "空炸波及消息范围 n",
+    "type": "int",
+    "hint": "不合格自爆时扫描邻近多少条人类消息（跳过机器人自身发言，不占名额）；每条单独判定，默认 3",
+    "default": 3
+  },
+  "splash_chance": {
+    "description": "波及概率 a（%）",
+    "type": "float",
+    "hint": "邻近范围内每条发言单独判定；同一人可多次命中并叠加禁言。默认 10",
+    "default": 10
+  },
+  "splash_duration": {
+    "description": "波及禁言秒数 b",
+    "type": "int",
+    "hint": "单次命中的禁言时长；同一人命中 N 次则为 N×b 秒。默认 10",
+    "default": 10
+  }
+}

@@ -1,0 +1,22 @@
+name: astrbot_plugin_self_destruct_truck
+display_name: 自爆卡车
+desc: /自爆卡车 @xxx；空炸自禁并波及；禁言走弧光护卫累加（不豁免白名单）
+help: |
+  用法：
+    /自爆卡车 @对方
+
+  规则：
+    - 正确 @ 别人：发起者随机禁言(下限~59)，对方 = 60 - 该值
+    - 没 @ 或格式不对：扫描邻近 n 条人类消息（跳过机器人自身发言）；
+      每条发言单独 a% 判定禁言 b 秒；同一人多次命中则秒数叠加；
+      发起者自己禁言 = 波及者禁言秒数总和（无人波及时回退 15~45 秒随机）
+    - 禁言优先接入弧光护卫累加体系（调用时 respect_whitelist=false，不豁免白名单）
+    - 真禁言仅支持 aiocqhttp（OneBot set_group_ban）；无接口时失败
+version: 1.6.3
+author: DEVILENMO
+repo: https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck
+support_platforms:
+  - aiocqhttp
+  - qq_official
+  - qq_official_webhook
+astrbot_version: ">=4.0.0"

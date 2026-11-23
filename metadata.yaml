@@ -13,7 +13,7 @@ help: |
     - 禁言优先接入弧光护卫累加体系（调用时 respect_whitelist=false，不豁免白名单）
     - 未安装弧光护卫时由本插件直接禁言，aiocqhttp 与 qq_official 均支持
       （aiocqhttp 需机器人有群禁言权限；qq_official 需机器人为群管理员）
-version: 1.7.0
+version: 1.7.1
 author: DEVILENMO
 repo: https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck
 support_platforms:

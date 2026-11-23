@@ -11,7 +11,7 @@ from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.message_components import At, Plain
 from astrbot.api.star import Context, Star, register
 
-PLUGIN_VERSION = "1.7.0"
+PLUGIN_VERSION = "1.7.1"
 ARC_GUARD_PLUGIN = "astrbot_plugin_arc_guard"
 
 
@@ -240,10 +240,12 @@ class SelfDestructTruckPlugin(Star):
             return False
 
     async def _ban(self, event: AstrMessageEvent, user_id: str, seconds: int) -> str:
-        """Accumulate mute via Arc Guard; fall back to the platform-native mute.
+        """Mute via Arc Guard; direct mute only when Arc Guard is absent.
 
         Calls Arc Guard with ``respect_whitelist=False`` so whitelist users
-        (e.g. 593405016) can still be muted by the truck.
+        (e.g. 593405016) can still be muted by the truck. When Arc Guard is
+        installed, its verdict is final: a refusal (super-admin protection,
+        linked bots, ...) is never bypassed with a direct mute.
 
         Args:
             event: Current group message event.
@@ -265,27 +267,26 @@ class SelfDestructTruckPlugin(Star):
                     result = await mute(
                         event, uid, int(seconds), respect_whitelist=False
                     )
-                    if result.get("ok"):
-                        logger.info(
-                            "自爆卡车弧光护卫累加禁言 user=%s remaining=%s + add=%s -> total=%s",
-                            uid,
-                            result.get("remaining_before"),
-                            result.get("added"),
-                            result.get("total"),
-                        )
-                        return "ok"
-                    logger.warning(
-                        "自爆卡车弧光护卫禁言未成功 user=%s err=%s，尝试直连禁言",
-                        uid,
-                        result.get("error") or "unknown",
-                    )
                 except Exception as exc:  # noqa: BLE001
-                    logger.error(
-                        "自爆卡车弧光护卫禁言异常 user=%s err=%s，尝试直连禁言",
+                    logger.error("自爆卡车弧光护卫禁言异常 user=%s err=%s", uid, exc)
+                    return "fail"
+                if result.get("ok"):
+                    logger.info(
+                        "自爆卡车弧光护卫累加禁言 user=%s remaining=%s + add=%s -> total=%s",
                         uid,
-                        exc,
+                        result.get("remaining_before"),
+                        result.get("added"),
+                        result.get("total"),
                     )
+                    return "ok"
+                logger.warning(
+                    "自爆卡车弧光护卫禁言未成功 user=%s err=%s",
+                    uid,
+                    result.get("error") or "unknown",
+                )
+                return "fail"
 
+        # Arc Guard absent: direct platform-native mute fallback.
         group_id = event.get_group_id()
         bot = getattr(event, "bot", None)
         gid = str(group_id or "")

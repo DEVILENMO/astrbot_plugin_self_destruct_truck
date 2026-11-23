@@ -5,7 +5,7 @@ AstrBot 群聊趣味禁言插件：对轰互禁，空炸自罚并可能波及邻
 [![AstrBot Plugin](https://img.shields.io/badge/AstrBot-Plugin-blue.svg)](https://docs.astrbot.app/)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/platform-aiocqhttp%20%7C%20qq__official-orange.svg)](https://docs.astrbot.app/)
-[![Version](https://img.shields.io/badge/version-1.7.0-green.svg)](https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck)
+[![Version](https://img.shields.io/badge/version-1.7.1-green.svg)](https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck)
 
 ## 功能概览
 
@@ -73,6 +73,10 @@ https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck
 | `splash_duration` | `10` | 单次波及禁言秒数 |
 
 ## 更新记录
+
+### 1.7.1
+
+- 弧光护卫在场时，它的裁决是最终结果：拒绝（如超级管理员硬保护、联动机器人）后不再回退直连禁言；只有未安装弧光护卫时才由本插件直接禁言
 
 ### 1.7.0
 

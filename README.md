@@ -4,22 +4,22 @@ AstrBot 群聊趣味禁言插件：对轰互禁，空炸自罚并可能波及邻
 
 [![AstrBot Plugin](https://img.shields.io/badge/AstrBot-Plugin-blue.svg)](https://docs.astrbot.app/)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
-[![Platform](https://img.shields.io/badge/platform-aiocqhttp-orange.svg)](https://docs.astrbot.app/)
-[![Version](https://img.shields.io/badge/version-1.6.3-green.svg)](https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck)
+[![Platform](https://img.shields.io/badge/platform-aiocqhttp%20%7C%20qq__official-orange.svg)](https://docs.astrbot.app/)
+[![Version](https://img.shields.io/badge/version-1.7.0-green.svg)](https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck)
 
 ## 功能概览
 
 - **正确对轰**：`/自爆卡车 @对方` → 发起者随机禁言，对方 = 总和 − 发起者
 - **空炸 / 原地自爆**：没 @、@ 自己、或格式不对时，扫描邻近人类发言并按概率波及；发起者禁言 = 波及秒数总和（无人波及时随机自罚）
-- **累加禁言**：优先接入 [弧光护卫](https://github.com/DEVILENMO/astrbot_plugin_arc_guard) 的累加接口（`respect_whitelist=false`，不豁免白名单）
+- **累加禁言**：优先接入 [弧光护卫](https://github.com/DEVILENMO/astrbot_plugin_arc_guard) 的累加接口（`respect_whitelist=false`，不豁免白名单）；未安装时由本插件直接禁言，`aiocqhttp` / `qq_official` 均可用
 - **评级**：按对轰分配或波及伤害给出 S～F 评级文案
 
 ## 环境要求
 
 - AstrBot `>= 4.0.0`
 - Python `3.10+`
-- 真禁言：`aiocqhttp`（OneBot `set_group_ban`），机器人需有群禁言权限
-- 推荐同时启用 `astrbot_plugin_arc_guard`（弧光护卫），以便走累加禁言；未启用时回退为直连 OneBot 禁言
+- 真禁言：`aiocqhttp` 需机器人有群禁言权限；`qq_official` 需把机器人设为群管理员（只能禁言普通成员）
+- 推荐同时启用 `astrbot_plugin_arc_guard`（弧光护卫），以便走累加禁言；未启用时由本插件直接禁言，两个平台均可用
 
 ## 安装
 
@@ -75,7 +75,7 @@ https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck
 ## 常见问题
 
 **提示失败 / 没禁言？**  
-确认机器人是群管理员且有禁言权限；官方机器人平台目前没有原生禁言接口时会失败。
+确认机器人能禁言群成员：`aiocqhttp` 需要群禁言权限，`qq_official` 需要把机器人设为群管理员。目标是群主/管理员时，官方平台无法禁言。
 
 **白名单用户也能被炸？**  
 可以。走弧光护卫时会显式关闭白名单豁免（`respect_whitelist=false`）。

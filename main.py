@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import asyncio
 import random
 import re
+import time
+from datetime import datetime, timedelta, timezone
 
 from astrbot.api import AstrBotConfig, logger
 from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.message_components import At, Plain
 from astrbot.api.star import Context, Star, register
 
-PLUGIN_VERSION = "1.6.3"
+PLUGIN_VERSION = "1.7.0"
 ARC_GUARD_PLUGIN = "astrbot_plugin_arc_guard"
 
 
@@ -26,7 +29,8 @@ class SelfDestructTruckPlugin(Star):
 
     - 正确 @ 别人：发起者随机禁言，对方 = 总和 - 发起者
     - 格式不对：发起者自己炸（禁言 = 波及者禁言秒数总和；无人波及时回退随机上下限），并波及邻近发言者
-    - 禁言优先走弧光护卫累加接口（``respect_whitelist=False``，不豁免白名单）
+    - 禁言优先走弧光护卫累加接口（``respect_whitelist=False``，不豁免白名单）；
+      弧光护卫不可用时由本插件直接禁言（aiocqhttp / qq_official 均支持）
     """
 
     def __init__(self, context: Context, config: AstrBotConfig | None = None):
@@ -159,8 +163,84 @@ class SelfDestructTruckPlugin(Star):
                 )
         return at_ids
 
+    async def _official_mute(
+        self, bot, group_openid: str, member_openid: str, seconds: int
+    ) -> bool:
+        """Mute a member on qq_official without Arc Guard.
+
+        Uses the official group-admin API: the bot must be a group admin and
+        only regular members can be muted. The current mute state is read
+        first so an existing longer mute is never shortened.
+
+        Args:
+            bot: qq_official botpy client.
+            group_openid: Group openid.
+            member_openid: Member openid.
+            seconds: Mute seconds.
+
+        Returns:
+            True if the mute API call succeeded.
+        """
+        if not (hasattr(bot, "api") and hasattr(bot.api, "_http")):
+            return False
+        try:
+            from botpy.http import Route
+
+            http = bot.api._http
+            expire = int(time.time()) + max(1, int(seconds))
+            op = "add"
+            state = await asyncio.wait_for(
+                http.request(
+                    Route(
+                        "GET",
+                        "/v2/groups/{group_openid}/restrict_chat_setting",
+                        group_openid=group_openid,
+                    )
+                ),
+                timeout=5,
+            )
+            members = state.get("members") if isinstance(state, dict) else None
+            for item in members if isinstance(members, list) else []:
+                if (
+                    not isinstance(item, dict)
+                    or item.get("member_openid") != member_openid
+                ):
+                    continue
+                op = "update"
+                current = datetime.fromisoformat(
+                    str(item.get("mute_expire_at") or "").replace("Z", "+00:00")
+                )
+                expire = max(expire, int(current.timestamp()))
+                break
+            expire_at = datetime.fromtimestamp(
+                expire, tz=timezone(timedelta(hours=8))
+            ).strftime("%Y-%m-%dT%H:%M:%S+08:00")
+            await asyncio.wait_for(
+                http.request(
+                    Route(
+                        "POST",
+                        "/v2/groups/{group_openid}/restrict_chat_setting",
+                        group_openid=group_openid,
+                    ),
+                    json={
+                        "members": [
+                            {
+                                "op": op,
+                                "member_openid": member_openid,
+                                "mute_expire_at": expire_at,
+                            }
+                        ]
+                    },
+                ),
+                timeout=5,
+            )
+            return True
+        except Exception as exc:  # noqa: BLE001
+            logger.error("自爆卡车官方禁言失败 user=%s err=%s", member_openid, exc)
+            return False
+
     async def _ban(self, event: AstrMessageEvent, user_id: str, seconds: int) -> str:
-        """Accumulate mute via Arc Guard; fall back to raw set_group_ban.
+        """Accumulate mute via Arc Guard; fall back to the platform-native mute.
 
         Calls Arc Guard with ``respect_whitelist=False`` so whitelist users
         (e.g. 593405016) can still be muted by the truck.
@@ -211,6 +291,10 @@ class SelfDestructTruckPlugin(Star):
         gid = str(group_id or "")
         if not gid or bot is None:
             return "fail"
+        # A qq_official bot (botpy client) exposes ``api._http``; OneBot
+        # bots answer any attribute with an action caller that lacks it.
+        if hasattr(bot, "api") and hasattr(bot.api, "_http"):
+            return "ok" if await self._official_mute(bot, gid, uid, seconds) else "fail"
         if not (gid.isdigit() and uid.isdigit() and hasattr(bot, "set_group_ban")):
             return "fail"
         try:
@@ -422,9 +506,9 @@ class SelfDestructTruckPlugin(Star):
                         )
                     )
                 )
-            result = event.chain_result(chain)
-            result.use_markdown_ = False
-            yield result
+            # use_markdown_ stays at its default (follow the platform): on
+            # qq_official an ``At`` only renders as a real mention in markdown.
+            yield event.chain_result(chain)
             event.stop_event()
             return
 
@@ -460,6 +544,5 @@ class SelfDestructTruckPlugin(Star):
                 Plain(f"：{self._ban_label(target_status)}"),
             ]
         )
-        result.use_markdown_ = False
         yield result
         event.stop_event()

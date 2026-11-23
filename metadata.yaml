@@ -11,8 +11,9 @@ help: |
       每条发言单独 a% 判定禁言 b 秒；同一人多次命中则秒数叠加；
       发起者自己禁言 = 波及者禁言秒数总和（无人波及时回退 15~45 秒随机）
     - 禁言优先接入弧光护卫累加体系（调用时 respect_whitelist=false，不豁免白名单）
-    - 真禁言仅支持 aiocqhttp（OneBot set_group_ban）；无接口时失败
-version: 1.6.3
+    - 未安装弧光护卫时由本插件直接禁言，aiocqhttp 与 qq_official 均支持
+      （aiocqhttp 需机器人有群禁言权限；qq_official 需机器人为群管理员）
+version: 1.7.0
 author: DEVILENMO
 repo: https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck
 support_platforms:

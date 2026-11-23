@@ -72,6 +72,13 @@ https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck
 | `splash_chance` | `10` | 每条发言被波及的概率（%） |
 | `splash_duration` | `10` | 单次波及禁言秒数 |
 
+## 更新记录
+
+### 1.7.0
+
+- 未安装弧光护卫（或其禁言未成功）时，由本插件直接禁言，`aiocqhttp` 与 `qq_official` 均可用；官方平台走群管理接口 `restrict_chat_setting`，不会缩短已有的禁言
+- 修复 `qq_official` 上 `@` 显示为原始标签：消息不再强制纯文本，跟随平台的 markdown 设置
+
 ## 常见问题
 
 **提示失败 / 没禁言？**  
@@ -81,7 +88,7 @@ https://github.com/DEVILENMO/astrbot_plugin_self_destruct_truck
 可以。走弧光护卫时会显式关闭白名单豁免（`respect_whitelist=false`）。
 
 **波及总是空？**  
-群里近期人类发言太少、概率未命中，或历史消息接口不可用时会出现。可调高 `splash_chance` / `splash_range`。
+群里近期人类发言太少或概率未命中时会出现，可调高 `splash_chance` / `splash_range`。波及对象来自插件自己记录的最近 50 条群发言；`aiocqhttp` 上记录为空时还会拉取群历史消息，`qq_official` 没有这个接口，所以插件刚重载后需要群里先有人说话。
 
 ## 目录结构
 
